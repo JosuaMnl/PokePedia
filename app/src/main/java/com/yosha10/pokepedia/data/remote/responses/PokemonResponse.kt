@@ -1,4 +1,4 @@
-package com.yosha10.pokepedia.data.remote
+package com.yosha10.pokepedia.data.remote.responses
 
 import com.google.gson.annotations.SerializedName
 
