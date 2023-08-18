@@ -7,12 +7,12 @@ plugins {
 
 android {
     namespace = "com.yosha10.pokepedia"
-    compileSdk = 33
+    compileSdk = 34
 
     defaultConfig {
         applicationId = "com.yosha10.pokepedia"
         minSdk = 24
-        targetSdk = 33
+        targetSdk = 34
         versionCode = 1
         versionName = "1.0"
 
@@ -32,11 +32,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_1_8
-        targetCompatibility = JavaVersion.VERSION_1_8
+        sourceCompatibility = JavaVersion.VERSION_18
+        targetCompatibility = JavaVersion.VERSION_18
     }
     kotlinOptions {
-        jvmTarget = "1.8"
+        jvmTarget = "18"
     }
     buildFeatures {
         compose = true
@@ -83,14 +83,14 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.7.3")
 
     // Coil
-    implementation("io.coil-kt:coil-compose:1.4.0")
-//    implementation("com.google.accompanist:accompanist-coil:0.19.0")
+    implementation("io.coil-kt:coil-compose:2.4.0")
+//    implementation("com.google.accompanist:accompanist-coil:0.33.0-alpha")
 
     // Hilt
     implementation("com.google.dagger:hilt-android:2.47")
     kapt("com.google.dagger:hilt-android-compiler:2.47")
-    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
-    kapt("androidx.hilt:hilt-compiler:1.0.0")
+//    implementation("androidx.hilt:hilt-lifecycle-viewmodel:1.0.0-alpha03")
+//    kapt("androidx.hilt:hilt-compiler:1.0.0")
     implementation("androidx.hilt:hilt-navigation-compose:1.0.0")
 
     implementation("androidx.palette:palette-ktx:1.0.0")
