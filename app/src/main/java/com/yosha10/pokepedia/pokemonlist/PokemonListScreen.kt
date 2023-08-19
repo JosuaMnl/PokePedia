@@ -54,7 +54,8 @@ import com.yosha10.pokepedia.data.models.PokemonList
 
 @Composable
 fun PokemonListScreen(
-    navController: NavController
+    navController: NavController,
+    viewModel: PokemonListViewModel = hiltViewModel()
 ) {
     Surface(
         color = MaterialTheme.colorScheme.background,
@@ -74,7 +75,9 @@ fun PokemonListScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp)
-            )
+            ) {
+                viewModel.searchData(it)
+            }
             Spacer(modifier = Modifier.height(16.dp))
             PokePediaList(navController = navController)
         }
@@ -132,6 +135,7 @@ fun PokePediaList(
     val endReached by remember { viewModel.endReached }
     val loadError by remember { viewModel.loadError }
     val isLoading by remember { viewModel.isLoading }
+    val isSearching by remember { viewModel.isSearching }
 
     LazyColumn(contentPadding = PaddingValues(16.dp)) {
         val itemCount = if (pokemonList.size % 2 == 0) {
@@ -140,7 +144,7 @@ fun PokePediaList(
             pokemonList.size / 2 + 1
         }
         items(itemCount) {
-            if (it >= itemCount - 1 && !endReached && !isLoading) {
+            if (it >= itemCount - 1 && !endReached && !isLoading && !isSearching) {
                 viewModel.loadPaginatedData()
             }
             PokePediaRow(indexRow = it, entries = pokemonList, navController = navController)

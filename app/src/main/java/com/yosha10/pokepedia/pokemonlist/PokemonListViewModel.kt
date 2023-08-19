@@ -14,6 +14,7 @@ import com.yosha10.pokepedia.repository.PokePediaRepository
 import com.yosha10.pokepedia.utils.Constants.PAGE_SIZE
 import com.yosha10.pokepedia.utils.Resource
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.util.Locale
 import javax.inject.Inject
@@ -30,8 +31,39 @@ class PokemonListViewModel @Inject constructor(
     var isLoading = mutableStateOf(false)
     var endReached = mutableStateOf(false)
 
+    private var cachedPokemonList = listOf<PokemonList>()
+    private var isSearchStarted = true
+    var isSearching = mutableStateOf(false)
+
     init {
         loadPaginatedData()
+    }
+
+    fun searchData(query: String){
+        val listToSearch = if (isSearchStarted) {
+            pokemonList.value
+        } else {
+            cachedPokemonList
+        }
+
+        viewModelScope.launch(Dispatchers.Default) {
+            if (query.isEmpty()) {
+                pokemonList.value = cachedPokemonList
+                isSearchStarted = true
+                isSearching.value = false
+                return@launch
+            }
+            val result = listToSearch.filter {
+                it.pokemonName.contains(query.trim(), ignoreCase = true) ||
+                        it.number.toString() == query.trim()
+            }
+            if (isSearchStarted) {
+                cachedPokemonList = pokemonList.value
+                isSearchStarted = false
+            }
+            pokemonList.value = result
+            isSearching.value = true
+        }
     }
 
     fun loadPaginatedData() {
