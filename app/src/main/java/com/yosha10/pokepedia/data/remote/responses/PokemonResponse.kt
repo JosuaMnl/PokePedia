@@ -38,7 +38,7 @@ data class PokemonResponse(
 	val species: Species? = null,
 
 	@field:SerializedName("stats")
-	val stats: List<StatsItem?>? = null,
+	val stats: List<StatsItem>,
 
 	@field:SerializedName("moves")
 	val moves: List<MovesItem?>? = null,
@@ -344,7 +344,7 @@ data class StatsItem(
 	val stat: Stat? = null,
 
 	@field:SerializedName("base_stat")
-	val baseStat: Int? = null,
+	val baseStat: Int,
 
 	@field:SerializedName("effort")
 	val effort: Int? = null
