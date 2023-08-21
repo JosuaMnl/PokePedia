@@ -8,7 +8,7 @@ data class PokemonResponse(
 	val locationAreaEncounters: String? = null,
 
 	@field:SerializedName("types")
-	val types: List<TypesItem?>? = null,
+	val types: List<TypesItem>,
 
 	@field:SerializedName("base_experience")
 	val baseExperience: Int? = null,
@@ -17,7 +17,7 @@ data class PokemonResponse(
 	val heldItems: List<Any?>? = null,
 
 	@field:SerializedName("weight")
-	val weight: Int? = null,
+	val weight: Int,
 
 	@field:SerializedName("is_default")
 	val isDefault: Boolean? = null,
@@ -53,7 +53,7 @@ data class PokemonResponse(
 	val forms: List<FormsItem?>? = null,
 
 	@field:SerializedName("height")
-	val height: Int? = null,
+	val height: Int,
 
 	@field:SerializedName("order")
 	val order: Int? = null
@@ -164,7 +164,7 @@ data class TypesItem(
 	val slot: Int? = null,
 
 	@field:SerializedName("type")
-	val type: Type? = null
+	val type: Type
 )
 
 data class DiamondPearl(
