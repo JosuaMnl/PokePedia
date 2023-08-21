@@ -1,7 +1,10 @@
 package com.yosha10.pokepedia.pokemondetail
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -25,11 +28,13 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.produceState
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -40,7 +45,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.capitalize
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
@@ -52,9 +56,10 @@ import coil.compose.SubcomposeAsyncImage
 import coil.request.ImageRequest
 import com.yosha10.pokepedia.R
 import com.yosha10.pokepedia.data.remote.responses.PokemonResponse
-import com.yosha10.pokepedia.data.remote.responses.Type
 import com.yosha10.pokepedia.data.remote.responses.TypesItem
 import com.yosha10.pokepedia.utils.Resource
+import com.yosha10.pokepedia.utils.parseStatToAbbr
+import com.yosha10.pokepedia.utils.parseStatToColor
 import com.yosha10.pokepedia.utils.parseTypeToColor
 import java.util.Locale
 
@@ -89,7 +94,7 @@ fun PokemonDetailScreen(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(
-                    top = topPadding + pokemonImageSize / 2,
+                    top = topPadding + pokemonImageSize / 2f,
                     start = 16.dp,
                     end = 16.dp,
                     bottom = 16.dp
@@ -103,7 +108,7 @@ fun PokemonDetailScreen(
                 .size(100.dp)
                 .align(Alignment.Center)
                 .padding(
-                    top = topPadding + pokemonImageSize / 2,
+                    top = topPadding + pokemonImageSize / 2f,
                     start = 16.dp,
                     end = 16.dp,
                     bottom = 16.dp
@@ -203,7 +208,7 @@ fun PokemonDetailSection(
             .fillMaxSize()
             .offset(y = 100.dp)
             .verticalScroll(scrollState),
-        horizontalAlignment = Alignment.CenterHorizontally
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
             text = "#${pokemonDetail.id} ${pokemonDetail.name?.capitalize(Locale.ROOT)}",
@@ -213,10 +218,13 @@ fun PokemonDetailSection(
             color = MaterialTheme.colorScheme.onSurface,
         )
         PokemonTypeSection(types = pokemonDetail.types)
+        Spacer(modifier = Modifier.height(16.dp))
         PokemonDetailDataSection(
             pokemonHeight = pokemonDetail.height,
             pokemonWeight = pokemonDetail.weight
         )
+        Spacer(modifier = Modifier.height(16.dp))
+        PokemonBaseStats(pokemonDetail = pokemonDetail)
     }
 }
 
@@ -303,5 +311,95 @@ fun PokemonDetailDataItem(
         )
         Spacer(modifier = Modifier.height(8.dp))
         Text(text = "$dataValue $dataUnit", color = MaterialTheme.colorScheme.onSurface)
+    }
+}
+
+@Composable
+fun PokemonStat(
+    statName: String,
+    statValue: Int,
+    statMaxValue: Int,
+    statColor: Color,
+    height: Dp = 28.dp,
+    animDuration: Int = 1000,
+    animDelay: Int = 0
+) {
+    var isAnimatePlayed by remember {
+        mutableStateOf(false)
+    }
+    val curPercent = animateFloatAsState(
+        targetValue = if (isAnimatePlayed) {
+            statValue / statMaxValue.toFloat()
+        } else 0f,
+        label = "",
+        animationSpec = tween(
+            animDuration, animDelay
+        )
+    ).value
+    LaunchedEffect(key1 = true) {
+        isAnimatePlayed = true
+    }
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(height)
+            .clip(CircleShape)
+            .background(
+                if (isSystemInDarkTheme()) {
+                    Color(0xFF505050)
+                } else {
+                    Color.LightGray
+                }
+            )
+    ) {
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth(curPercent)
+                .clip(CircleShape)
+                .background(statColor)
+                .padding(horizontal = 8.dp)
+        ) {
+            Text(text = statName, fontWeight = FontWeight.Bold)
+            Text(
+                text = (curPercent * statMaxValue).toInt().toString(),
+                fontWeight = FontWeight.Bold
+            )
+        }
+    }
+}
+
+@Composable
+fun PokemonBaseStats(
+    pokemonDetail: PokemonResponse,
+    animDelayPerItem: Int = 100,
+) {
+    val maxBaseStat by remember {
+        mutableIntStateOf(
+            pokemonDetail.stats.maxOf { it.baseStat }
+        )
+    }
+    Column(
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Text(
+            text = "Detail Base Stats: ", fontSize = 20.sp,
+            color = MaterialTheme.colorScheme.onSurface
+        )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        for (indexStat in pokemonDetail.stats.indices) {
+            val stat = pokemonDetail.stats[indexStat]
+            PokemonStat(
+                statName = parseStatToAbbr(stat),
+                statValue = stat.baseStat,
+                statMaxValue = maxBaseStat,
+                statColor = parseStatToColor(stat),
+                animDelay = indexStat * animDelayPerItem
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+        }
     }
 }
